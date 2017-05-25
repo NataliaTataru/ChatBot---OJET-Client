@@ -17,9 +17,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
         var self = this;
 
         self.userMsg = ko.observable();
+        self.botResponseBig = ko.observable();
 
-        if (self.userMsg() !== undefined)
-            console.log(self.userMsg());
 
 
 //        $('#button').click(function () {
@@ -52,6 +51,12 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
         $(document).ready(function () {
 
+            if (self.userMsg() !== undefined) {
+                console.log("USER MESSAGE --------------");
+                console.log(self.userMsg());
+            }
+            console.log(self.userMsg());
+
             var queryResponse;
             $.ajax({
                 url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatline/userId/2',
@@ -72,6 +77,9 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                         console.log(Robotxt);
                         $(".chat").append('<li class="self"><div class="avatar"></div><div class="msg"><p>' + Usertxt + '</p></div></li>');
                         $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + Robotxt + '</p></div></li>');
+
+
+
                     }
 
                     console.log("-------------------");
@@ -84,11 +92,30 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                     console.log(responseXML);
                     queryResponse = responseXML;
                     console.log(queryResponse.getElementsByTagName('chatLines')[0].firstChild.nodeValue);
-                    
+
                 }
             });
 
         })
+
+        function insertConversation() {
+            $.ajax({
+                url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatline/insertConversation',
+                data: {
+                    'lineText': self.userMsg(),
+                    'botResponse': self.botResponseBig()
+                },
+                method: 'PUT',
+                crossDomain: true,
+                success: function (response) {
+                    console.log("INSERT ____________");
+                    // console.log(response, response.msg);
+                    //botResponse = JSON.stringify(response.msg);
+                    //console.log(botResponse);
+                    //$(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + botResponse + '</p></div></li>');
+                }
+            });
+        }
 
         //ON PRESSING THE "ENTER" KEY
         $(document).keypress(function (e) {
@@ -100,6 +127,11 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
 
             if (e.which === 13) {
+
+
+                console.log("USER MESSAGE --------------");
+                console.log(self.userMsg());
+
 //                alert("BAM");
 //                var allLi = document.getElementsByTagName('li');
 
@@ -137,6 +169,10 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
                 $(".chat").append('<li class="self"><div class="avatar"></div><div class="msg"><p>' + self.userMsg() + '</p></div></li>');
 
+                if (botResponse !== 'undefined') {
+                    self.botResponseBig(botResponse);
+                    insertConversation();
+                }
             }
         });
 
