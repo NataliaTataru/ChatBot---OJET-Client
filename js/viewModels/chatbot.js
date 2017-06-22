@@ -8,7 +8,7 @@
  * chatbot module
  */
 define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombobox',
-    'ojs/ojinputtext', 'ojs/ojbutton'
+    'ojs/ojinputtext', 'ojs/ojbutton', 'ojs/ojtimezonedata'
 ], function (oj, ko) {
     /**
      * The view model for the main content view template
@@ -59,7 +59,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
             var queryResponse;
             $.ajax({
-                url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatline/userId/2',
+                url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatrest.chatline/userId2/2',
                 method: 'GET',
                 dataType: "xml",
                 crossDomain: true,
@@ -98,21 +98,59 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
         })
 
+        function formToJSON() {
+            return JSON.stringify({
+                "id": $('#id').val(),
+                "name": $('#name').val(),
+                "grapes": $('#grapes').val(),
+                "country": $('#country').val(),
+                "region": $('#region').val(),
+                "year": $('#year').val(),
+                "description": $('#description').val()
+            });
+        }
+        $.support.cors = true;
         function insertConversation() {
+            self.value = ko.observable(oj.IntlConverterUtils.dateToLocalIso(new Date(1, 0, 2013)));
+//            self.value = ko.observable(oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).
+//                    createConverter(
+//                            {
+//                                pattern: "yyyy-MM-dd HH:MM:SS"
+//                            }));
+
+            var date = new Date() + "";
+
+//            var year = date.getFullYear();
+//            var month = date.getMonth();
+//            var day = date.getDay();
+//            var hours = date.getHours();
+//            var minutes = date.getMinutes();
+//            var seconds = date.getSeconds();
+//            var d = new Date(year, month, day, hours, minutes, seconds);
+            var dateTime = new Date("2017-05-28 16:27:47");
+            self.value("2017-05-28 16:27:47");
+//            dateTime = dateTime.replace('T', ' ');
+            var conversation = {
+                'id': 1,
+                'chatId': 1,
+                'userId': 1,
+                'lineText': self.userMsg(),
+                'createdAt': self.value().replace('T', ' '),
+                'botResponse': self.botResponseBig().replace(/['"]+/g, '')
+            };
+            console.log(JSON.stringify(conversation));
+            console.log("BOT RESPONSE ________");
+            console.log(self.botResponseBig().replace(/['"]+/g, ''));
+
             $.ajax({
-                url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatline/insertConversation',
-                data: {
-                    'lineText': self.userMsg(),
-                    'botResponse': self.botResponseBig()
-                },
-                method: 'PUT',
+                url: 'http://localhost:8080/RestTest/resources/com.airhacks.chatrest.chatline/insertConversationNativeGET2',
+                data: JSON.stringify(conversation),
+                contentType: "application/json",
+                method: 'POST',
                 crossDomain: true,
                 success: function (response) {
                     console.log("INSERT ____________");
-                    // console.log(response, response.msg);
-                    //botResponse = JSON.stringify(response.msg);
-                    //console.log(botResponse);
-                    //$(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + botResponse + '</p></div></li>');
+
                 }
             });
         }
@@ -163,16 +201,23 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                         console.log(response, response.msg);
                         botResponse = JSON.stringify(response.msg);
                         console.log(botResponse);
-                        $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + botResponse + '</p></div></li>');
+                        $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p class="textBot">' + botResponse.replace(/~/g,'</br>') + '</p></div></li>');
+                        $('.textBot').html(function (i, v) {
+                            return v.replace('\r\n', '</br>');
+                        });
+                        if (botResponse !== 'undefined') {
+                            console.log("NOT UNDEFINED");
+                            console.log(botResponse);
+                            self.botResponseBig(botResponse);
+//                            insertConversation();
+                        }
+
                     }
                 });
 
                 $(".chat").append('<li class="self"><div class="avatar"></div><div class="msg"><p>' + self.userMsg() + '</p></div></li>');
 
-                if (botResponse !== 'undefined') {
-                    self.botResponseBig(botResponse);
-                    insertConversation();
-                }
+
             }
         });
 
