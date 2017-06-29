@@ -18,6 +18,8 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 
         self.userMsg = ko.observable();
         self.botResponseBig = ko.observable();
+        
+        $('.chat').animate({scrollTop: $('.chat').prop("scrollHeight")}, 1600)
 
 
 
@@ -75,8 +77,29 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                         var Robotxt = x[i].firstChild.innerHTML;
                         var Usertxt = x[i].getElementsByTagName('lineText')[0].textContent;
                         console.log(Robotxt);
+
                         $(".chat").append('<li class="self"><div class="avatar"></div><div class="msg"><p>' + Usertxt + '</p></div></li>');
-                        $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + Robotxt + '</p></div></li>');
+
+
+
+                        Robotxt.split(/\s*~\s*/).forEach(function (roboMSG) {
+                            console.log(roboMSG);
+
+                            $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + roboMSG + '</p></div></li>');
+
+                        });
+
+
+                        $(document).scrollTop($(document).height());
+                        $('.chat').scrollTop($('.chat')[0].scrollHeight);
+                        var d = $('.chat');
+                        d.scrollTop(d.prop("scrollHeight"));
+
+//                        var elem = document.getElementsByClassName('chat');
+//                        elem = elem.scrollHeight;
+
+
+//                        $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p>' + Robotxt + '</p></div></li>');
 
 
 
@@ -109,16 +132,88 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                 "description": $('#description').val()
             });
         }
-        $.support.cors = true;
-        function insertConversation() {
-            self.value = ko.observable(oj.IntlConverterUtils.dateToLocalIso(new Date(1, 0, 2013)));
-//            self.value = ko.observable(oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).
-//                    createConverter(
-//                            {
-//                                pattern: "yyyy-MM-dd HH:MM:SS"
-//                            }));
 
-            var date = new Date() + "";
+
+        $.support.cors = true;
+        
+        
+//        function validateSamples() {
+//            
+//         
+//            var inputForTraining1 = [{
+//                    "text": "venitul meu este de 3400 RON",
+//                    "entities": [
+//                        {"entity": "intent",
+//                            "value": "get_venit_lunar"},
+//                        {"entity": "valoare_venit_lunar",
+//                            "start": 21,
+//                            "end": 25,
+//                            "value": "3400"}],
+//                }];
+//            
+//            return fetch('https://api.wit.ai/samples?v=20170307', {
+//            method: 'POST',
+//            mode: 'no-cors',
+//            headers: {
+//              Authorization: 'Bearer H6C3KOBY4KAGASXHC54VLSC3YMKLUFH3',
+//              'Content-Type': 'application/json',
+//            },
+//            body: JSON.stringify(inputForTraining1),
+//          })
+//            .then(res => res.json());
+//        };
+//
+//            validateSamples()
+//                .then(res => console.log(res));
+//        
+        
+        
+        function train() {
+
+
+            var inputForTraining = [{
+                    "text": "venitul meu este de 3400 RON",
+                    "entities": [
+                        {"entity": "intent",
+                            "value": "get_venit_lunar"},
+                        {"entity": "valoare_venit_lunar",
+                            "start": 21,
+                            "end": 25,
+                            "value": "3400"}],
+                }];
+
+             
+                
+            $.ajax({
+                url: 'http://127.0.0.1:5000/samples',
+                data: JSON.stringify(inputForTraining),
+           
+                method: 'GET',
+                crossDomain: true,
+              
+                success: function (response) {
+                    console.log("A MERS TRAINING");
+                    console.log(response, response.msg);
+                    botResponseTraining = JSON.stringify(response.msg);
+                    console.log(botResponseTraining);
+                }
+            });
+        }
+
+
+
+        function insertConversation() {
+
+//            train();
+
+//            self.value = ko.observable(oj.IntlConverterUtils.dateToLocalIso(new Date(1, 0, 2013)));
+            self.value = ko.observable(oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).
+                    createConverter(
+                            {
+                                pattern: "yyyy-MM-dd HH:MM:SS"
+                            }));
+
+            self.value(new Date());
 
 //            var year = date.getFullYear();
 //            var month = date.getMonth();
@@ -127,16 +222,31 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
 //            var minutes = date.getMinutes();
 //            var seconds = date.getSeconds();
 //            var d = new Date(year, month, day, hours, minutes, seconds);
+
+            console.log("DATE************");
+            console.log(self.value());
+
             var dateTime = new Date("2017-05-28 16:27:47");
             self.value("2017-05-28 16:27:47");
 //            dateTime = dateTime.replace('T', ' ');
+
+            var botResponseForDB = '';
+            if (self.botResponseBig()) {
+                console.log('RESPONSE OK');
+                botResponseForDB = self.botResponseBig().replace(/['"]+/g, '');
+            } else {
+                console.log('RESPONSE NOT OK');
+                botResponseForDB = 'Va rog sa repetati, nu am inteles.';
+            }
+
+
             var conversation = {
                 'id': 1,
                 'chatId': 1,
-                'userId': 1,
+                'userId': 2,
                 'lineText': self.userMsg(),
                 'createdAt': self.value().replace('T', ' '),
-                'botResponse': self.botResponseBig().replace(/['"]+/g, '')
+                'botResponse': botResponseForDB
             };
             console.log(JSON.stringify(conversation));
             console.log("BOT RESPONSE ________");
@@ -201,21 +311,61 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojknockout', 'ojs/ojselectcombo
                         console.log(response, response.msg);
                         botResponse = JSON.stringify(response.msg);
                         console.log(botResponse);
-                        $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p class="textBot">' + botResponse.replace(/~/g,'</br>') + '</p></div></li>');
-                        $('.textBot').html(function (i, v) {
-                            return v.replace('\r\n', '</br>');
-                        });
+
+                        //all offers in different messages
+//                        var str = botResponse;
+//                        var str_array = str.split('~');
+//
+//                        for (var i = 0; i < str_array.length; i++) {
+//                            // Trim the excess whitespace.
+//                            str_array[i] = str_array[i].replace(/^\s*/, "").replace(/\s*$/, "");
+//                            // Add additional code here, such as:
+//                            alert(str_array[i]);
+//                        }
+
+
+                        if (!botResponse) {
+                            $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p class="textBot">' + 'Va rog sa repetati, nu am inteles.' + '</p></div></li>');
+                            $('.textBot').html(function (i, v) {
+                                return v.replace('\r\n', '</br>');
+                            });
+                            $('.chat').animate({scrollTop: $('.chat').prop("scrollHeight")}, 900)
+                        } else {
+                            var botResponseAux = botResponse.replace(/['"]+/g, '');
+
+//                            var botResponseFinal = botResponseAux.replace(/\b([^-]*-[^\b]*?)\b/,"<strong>$1</strong>");
+
+                            botResponseAux.split(/\s*~\s*/).forEach(function (offer) {
+                                console.log(offer);
+                                setTimeout(function () {
+                                    $(".chat").append('<li class="other"><div class="avatar"></div><div class="msg"><p class="textBot">' + offer + '</p></div></li>');
+                                    $('.textBot').html(function (i, v) {
+                                        return v.replace('\r\n', '</br>');
+                                    }, 4000);
+                                },
+                                    $('.chat').animate({scrollTop: $('.chat').prop("scrollHeight")}, 1600)
+
+                                );
+                            });
+                        }
+
+
+
+
+
+
                         if (botResponse !== 'undefined') {
                             console.log("NOT UNDEFINED");
                             console.log(botResponse);
                             self.botResponseBig(botResponse);
-//                            insertConversation();
+                            insertConversation();
                         }
 
                     }
                 });
 
                 $(".chat").append('<li class="self"><div class="avatar"></div><div class="msg"><p>' + self.userMsg() + '</p></div></li>');
+                $('.chat').animate({scrollTop: $('.chat').prop("scrollHeight")}, 1600)
 
 
             }

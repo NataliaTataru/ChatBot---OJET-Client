@@ -69,7 +69,8 @@ a{
     background: rgba(255,255,255,0.2);
 }
 .name{
-    position: absolute;
+    padding-top: 6px;
+    
     top: 3px;
     left: 110px;
     font-family: 'Lato';
@@ -92,12 +93,15 @@ a{
 /* M E S S A G E S */
 
 .chat {
+    
+    height:1700px;
     list-style: none;
     background: none;
     margin: 0;
     padding: 0 0 50px 0;
     margin-top: 60px;
     margin-bottom: 10px;
+    overflow-y: auto;
 }
 .chat li {
     padding: 0.5rem;
@@ -155,7 +159,10 @@ a{
 .other .msg {
     background: white;
     order: 1;
+    border-bottom-right-radius: 10px;
     border-top-left-radius: 0px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
     box-shadow: -1px 2px 0px #D4D4D4;
 }
 .other:before {
@@ -178,7 +185,10 @@ a{
 .self .msg {
     background: #b7e6ec;
     order: 1;
-    border-bottom-right-radius: 0px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
     box-shadow: 1px 2px 0px #D4D4D4;
 }
 .self .avatar {
@@ -204,7 +214,7 @@ a{
 
 .msg {
     /*background: white;*/
-    width: 300px;
+    max-width: 450px;
     word-wrap: break-word;
     min-width: 50px;
     padding: 10px;
@@ -338,7 +348,7 @@ input.textarea {
     color: #666;
     font-weight: 400;
 }
-.emojis {
+.userAvatar {
     position: fixed;
     display: block;
     bottom: 8px;
@@ -348,7 +358,7 @@ input.textarea {
     background-image: url("images/User_Account_Person.png");
     background-repeat: no-repeat;
     background-size: cover;
-    z-index: 100;
+/*    z-index: 100;*/
     cursor: pointer;
 }
 .emojis:active {
